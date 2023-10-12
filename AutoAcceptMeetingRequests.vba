@@ -13,7 +13,7 @@ Sub AutoAcceptMeetingRequestsByOrganizer(Item As Outlook.MeetingItem)
     ' Check If the appointment item exists
     If Not objAppointment Is Nothing Then
         Set organizer = objAppointment.GetOrganizer
-        If objAppointment.MeetingStatus <> 7 And objAppointment.MeetingStatus <> 5 And objAppointment.ResponseStatus = 5  Then
+        If objAppointment.MeetingStatus <> 7 And objAppointment.MeetingStatus <> 5 And objAppointment.ResponseStatus = 5 Then
             ' Check If the organizer is an internal user
             If organizer.Type = "EX" Then
                 Debug.Print "--> The meeting request [Subject: " & objAppointment.Subject & "] organizer" & vbCrLf & "    [Organizer: " & objAppointment.GetOrganizer.GetExchangeUser.PrimarySmtpAddress & "] matched the rule and will be automatically accepted."
@@ -112,11 +112,16 @@ Sub AutoAcceptExternalMeetingRequestsIfNoConflict(Item As Outlook.MeetingItem)
 
             ' If the filtered calendar items count is Not 0, it means there's schedule conflict.
             If calendarItems.Count > 0 Then
-                Debug.Print "--> The meeting request [Subject: " & objAppointment.Subject & "] from " & vbCrLf & "    [Organizer: " & objAppointment.GetOrganizer.Address & "] conflicts With the following appointment(s):"
+                Debug.Print "--> The meeting request [Subject: " & objAppointment.Subject & "] from " & vbCrLf & "    [Organizer: " & objAppointment.GetOrganizer.Address & "] conflicts with the following appointment(s):"
                 For Each calendarItem In calendarItems
+                    If calendarItem.GetOrganizer.Type = "EX" Then
+                        conflictOrganizerEmail = calendarItem.GetOrganizer.GetExchangeUser.PrimarySmtpAddress
+                    ElseIf calendarItem.GetOrganizer.Type = "SMTP" Then
+                        conflictOrganizerEmail = calendarItem.Address
+                    End If
                     Debug.Print ""
                     Debug.Print "      Subject: " & calendarItem.Subject
-                    Debug.Print "      Organizer: " & calendarItem.GetOrganizer.Address
+                    Debug.Print "      Organizer: " & conflictOrganizerEmail
                     Debug.Print "      Start: " & calendarItem.Start
                     Debug.Print "      End: " & calendarItem.End
                     Debug.Print ""
@@ -146,4 +151,3 @@ Sub AutoAcceptExternalMeetingRequestsIfNoConflict(Item As Outlook.MeetingItem)
     Set calendarItems = Nothing
     Set calendarItem = Nothing
 End Sub
-
